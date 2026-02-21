@@ -16,10 +16,9 @@ RUN pip install --no-cache-dir hatchling
 COPY backend/pyproject.toml ./pyproject.toml
 
 # Install all project dependencies declared in pyproject.toml.
-# --no-build-isolation is required because hatchling is already present
-# and we have not copied the full source yet.
-RUN pip install --no-cache-dir --no-build-isolation \
-      $(python3 -c "import tomllib, sys; with open('pyproject.toml','rb') as f: deps = tomllib.load(f)['project']['dependencies']; print(' '.join(f'\"{d}\"' for d in deps))")
+# Write deps to a temp requirements file to avoid shell quoting issues.
+RUN python3 -c "import tomllib; f=open('pyproject.toml','rb'); print('\n'.join(tomllib.load(f)['project']['dependencies']))" > /tmp/requirements.txt && \
+    pip install --no-cache-dir -r /tmp/requirements.txt
 
 # Copy the full backend source
 COPY backend/ ./
