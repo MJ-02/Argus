@@ -1,0 +1,12 @@
+{
+  "id": "https://openalex.org/T10116",
+  "display_name": "Neural Machine Translation",
+  "domain": {
+    "id": "https://openalex.org/domains/1",
+    "display_name": "Computer Science"
+  },
+  "field": {
+    "id": "https://openalex.org/fields/11",
+    "display_name": "Artificial Intelligence"
+  }
+}

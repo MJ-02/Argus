@@ -1,0 +1,154 @@
+{
+  "meta": {
+    "count": 3,
+    "db_response_time_ms": 25,
+    "page": 1,
+    "per_page": 200,
+    "next_cursor": "IlsxNjA3OTI0ODAwMDAwLCBcIlcyNzQxODA5ODA3XCJdIg=="
+  },
+  "results": [
+    {
+      "id": "https://openalex.org/W2741809807",
+      "title": "Attention Is All You Need",
+      "abstract_inverted_index": {
+        "The": [0],
+        "dominant": [1],
+        "sequence": [2, 16],
+        "transduction": [3],
+        "models": [4, 20],
+        "are": [5],
+        "based": [6],
+        "on": [7, 23],
+        "complex": [8],
+        "recurrent": [9],
+        "or": [10],
+        "convolutional": [11],
+        "neural": [12],
+        "networks": [13],
+        "that": [14, 25],
+        "include": [15],
+        "an": [17],
+        "encoder": [18],
+        "and": [19, 27],
+        "a": [21],
+        "decoder": [22],
+        "attention": [24],
+        "mechanisms": [26],
+        "connect": [28],
+        "them.": [29]
+      },
+      "publication_year": 2017,
+      "doi": "https://doi.org/10.48550/arXiv.1706.03762",
+      "cited_by_count": 120000,
+      "updated_date": "2024-01-15",
+      "authorships": [
+        {
+          "author": {
+            "id": "https://openalex.org/A2109829088",
+            "display_name": "Ashish Vaswani"
+          },
+          "institutions": [
+            {
+              "id": "https://openalex.org/I1289349794",
+              "display_name": "Google Brain",
+              "country_code": "US",
+              "type": "company"
+            }
+          ]
+        },
+        {
+          "author": {
+            "id": "https://openalex.org/A2028025389",
+            "display_name": "Noam Shazeer"
+          },
+          "institutions": [
+            {
+              "id": "https://openalex.org/I1289349794",
+              "display_name": "Google Brain",
+              "country_code": "US",
+              "type": "company"
+            }
+          ]
+        }
+      ],
+      "topics": [
+        {
+          "id": "https://openalex.org/T10116",
+          "display_name": "Neural Machine Translation"
+        }
+      ],
+      "referenced_works": [
+        "https://openalex.org/W1982574323",
+        "https://openalex.org/W2011534025"
+      ]
+    },
+    {
+      "id": "https://openalex.org/W2950377191",
+      "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+      "abstract_inverted_index": {
+        "We": [0],
+        "introduce": [1],
+        "a": [2],
+        "new": [3],
+        "language": [4, 14],
+        "representation": [5],
+        "model": [6],
+        "called": [7],
+        "BERT,": [8],
+        "which": [9],
+        "stands": [10],
+        "for": [11],
+        "Bidirectional": [12],
+        "Encoder": [13],
+        "Representations": [15],
+        "from": [16],
+        "Transformers.": [17]
+      },
+      "publication_year": 2019,
+      "doi": "https://doi.org/10.18653/v1/N19-1423",
+      "cited_by_count": 85000,
+      "updated_date": "2024-01-10",
+      "authorships": [
+        {
+          "author": {
+            "id": "https://openalex.org/A2592887316",
+            "display_name": "Jacob Devlin"
+          },
+          "institutions": [
+            {
+              "id": "https://openalex.org/I1289349794",
+              "display_name": "Google Brain",
+              "country_code": "US",
+              "type": "company"
+            }
+          ]
+        }
+      ],
+      "topics": [
+        {
+          "id": "https://openalex.org/T10116",
+          "display_name": "Neural Machine Translation"
+        },
+        {
+          "id": "https://openalex.org/T11832",
+          "display_name": "Natural Language Processing"
+        }
+      ],
+      "referenced_works": [
+        "https://openalex.org/W2741809807"
+      ]
+    },
+    {
+      "id": "https://openalex.org/W3098374985",
+      "title": "Language Models are Few-Shot Learners",
+      "abstract_inverted_index": null,
+      "publication_year": 2020,
+      "doi": null,
+      "cited_by_count": 35000,
+      "updated_date": "2024-01-12",
+      "authorships": [],
+      "topics": [],
+      "referenced_works": []
+    }
+  ]
+}

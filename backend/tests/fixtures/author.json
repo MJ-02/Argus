@@ -1,0 +1,17 @@
+{
+  "id": "https://openalex.org/A2109829088",
+  "display_name": "Ashish Vaswani",
+  "orcid": "https://orcid.org/0000-0002-5251-5425",
+  "works_count": 42,
+  "cited_by_count": 145000,
+  "affiliations": [
+    {
+      "institution": {
+        "id": "https://openalex.org/I1289349794",
+        "display_name": "Google Brain",
+        "country_code": "US",
+        "type": "company"
+      }
+    }
+  ]
+}
