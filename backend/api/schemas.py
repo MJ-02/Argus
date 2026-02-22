@@ -72,3 +72,4 @@ class CrawlJobOut(BaseModel):
     last_crawled_at: datetime | None
     cursor: str | None
     last_error: str | None
+    metrics: dict[str, Any] | None = None

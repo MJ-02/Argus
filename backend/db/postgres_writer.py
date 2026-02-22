@@ -196,6 +196,7 @@ async def upsert_crawl_state(
     last_crawled_at: datetime | None = None,
     records_processed: int = 0,
     last_error: str | None = None,
+    metrics: dict | None = None,
 ) -> None:
     """Upsert the crawl state row for *job_id*.
 
@@ -209,6 +210,7 @@ async def upsert_crawl_state(
         last_crawled_at=last_crawled_at,
         records_processed=records_processed,
         last_error=last_error,
+        metrics=metrics,
     )
     stmt = stmt.on_conflict_do_update(
         constraint="uq_crawl_state_job_id",
@@ -217,6 +219,7 @@ async def upsert_crawl_state(
             "last_crawled_at": stmt.excluded.last_crawled_at,
             "records_processed": stmt.excluded.records_processed,
             "last_error": stmt.excluded.last_error,
+            "metrics": stmt.excluded.metrics,
         },
     )
     await session.execute(stmt)

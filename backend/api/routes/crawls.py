@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.deps import get_db
+from api.metrics import ACTIVE_CRAWL_JOBS
 from api.schemas import CrawlJobOut, StartCrawlIn
 from crawler.engine import SeedConfig
 from db.models import CrawlJob, CrawlState
@@ -33,6 +34,7 @@ def _to_out(job: CrawlJob, state: CrawlState | None) -> CrawlJobOut:
         last_crawled_at=state.last_crawled_at if state else None,
         cursor=state.cursor if state else None,
         last_error=state.last_error if state else None,
+        metrics=state.metrics if state else None,
     )
 
 
@@ -73,6 +75,7 @@ async def start_crawl(body: StartCrawlIn, db: AsyncSession = Depends(get_db)) ->
             "incremental": body.incremental,
         },
     )
+    ACTIVE_CRAWL_JOBS.inc()
 
     result = await db.execute(select(CrawlState).where(CrawlState.job_id == job.id))
     state = result.scalar_one_or_none()
@@ -96,6 +99,7 @@ async def stop_crawl(job_id: str, db: AsyncSession = Depends(get_db)) -> CrawlJo
     await update_crawl_job_status(db, job_id, "stopping")
     await db.commit()
     await db.refresh(job)
+    ACTIVE_CRAWL_JOBS.dec()
     return _to_out(job, state)
 
 
@@ -121,5 +125,6 @@ async def resume_crawl(job_id: str, db: AsyncSession = Depends(get_db)) -> Crawl
             "incremental": False,
         },
     )
+    ACTIVE_CRAWL_JOBS.inc()
 
     return _to_out(job, state)

@@ -46,6 +46,7 @@ class CrawlState(Base):
         Integer, nullable=False, default=0
     )
     last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    metrics: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
 
 class PaperMetadata(Base):

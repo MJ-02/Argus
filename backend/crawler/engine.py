@@ -105,18 +105,23 @@ class SeedConfig:
 async def _load_crawl_state(
     session: AsyncSession,
     job_id: str,
-) -> tuple[str, int, datetime | None]:
-    """Return ``(cursor, records_processed, last_crawled_at)`` for *job_id*.
+) -> tuple[str, int, datetime | None, dict]:
+    """Return ``(cursor, records_processed, last_crawled_at, metrics)`` for *job_id*.
 
-    Falls back to ``("*", 0, None)`` when no state row exists yet.
+    Falls back to ``("*", 0, None, {})`` when no state row exists yet.
     """
     result = await session.execute(
         select(CrawlState).where(CrawlState.job_id == job_id)
     )
     state = result.scalar_one_or_none()
     if state is None:
-        return "*", 0, None
-    return state.cursor or "*", state.records_processed or 0, state.last_crawled_at
+        return "*", 0, None, {}
+    return (
+        state.cursor or "*",
+        state.records_processed or 0,
+        state.last_crawled_at,
+        state.metrics or {},
+    )
 
 
 async def _is_stop_requested(session: AsyncSession, job_id: str) -> bool:
@@ -251,7 +256,7 @@ async def run_crawl(
             raise ValueError(f"CrawlJob {job_id!r} not found")
         logger.info("Resuming crawl job", extra={"job_id": job_id})
 
-    cursor, records_processed, last_crawled_at = await _load_crawl_state(
+    cursor, records_processed, last_crawled_at, agg_metrics = await _load_crawl_state(
         pg_session, job_id
     )
 
@@ -293,16 +298,45 @@ async def run_crawl(
             updated_after=updated_after,
         ):
             page_start = datetime.now(timezone.utc)
+            records_fetched = len(raw_works)
+
+            logger.info(
+                "Fetched OpenAlex page",
+                extra={
+                    "job_id": job_id,
+                    "cursor": page_cursor,
+                    "records_fetched": records_fetched,
+                },
+            )
 
             entities = _extract_page_entities(raw_works)
             page_count = len(entities["papers"])
 
-            # Write to Postgres
+            # -----------------------------------------------------------------
+            # Write to Postgres — log write duration
+            # -----------------------------------------------------------------
+            pg_start = datetime.now(timezone.utc)
             await upsert_papers(pg_session, entities["papers"])
             await upsert_authors(pg_session, entities["authors"])
             await upsert_institutions(pg_session, entities["institutions"])
+            pg_duration_ms = int(
+                (datetime.now(timezone.utc) - pg_start).total_seconds() * 1000
+            )
+            logger.debug(
+                "Postgres write complete",
+                extra={
+                    "job_id": job_id,
+                    "papers": len(entities["papers"]),
+                    "authors": len(entities["authors"]),
+                    "institutions": len(entities["institutions"]),
+                    "duration_ms": pg_duration_ms,
+                },
+            )
 
-            # Write to Neo4j
+            # -----------------------------------------------------------------
+            # Write to Neo4j — log write duration
+            # -----------------------------------------------------------------
+            neo4j_start = datetime.now(timezone.utc)
             await merge_papers(neo4j_driver, entities["papers"])
             await merge_authors(neo4j_driver, entities["authors"])
             await merge_institutions(neo4j_driver, entities["institutions"])
@@ -311,9 +345,47 @@ async def run_crawl(
             await merge_cites_rels(neo4j_driver, entities["citations"])
             await merge_affiliated_with_rels(neo4j_driver, entities["affiliations"])
             await merge_has_topic_rels(neo4j_driver, entities["paper_topics"])
+            neo4j_duration_ms = int(
+                (datetime.now(timezone.utc) - neo4j_start).total_seconds() * 1000
+            )
+            logger.debug(
+                "Neo4j write complete",
+                extra={
+                    "job_id": job_id,
+                    "topics": len(entities["topics"]),
+                    "authorships": len(entities["authorships"]),
+                    "citations": len(entities["citations"]),
+                    "affiliations": len(entities["affiliations"]),
+                    "paper_topics": len(entities["paper_topics"]),
+                    "duration_ms": neo4j_duration_ms,
+                },
+            )
 
-            # Persist progress
+            # -----------------------------------------------------------------
+            # Accumulate aggregate metrics
+            # -----------------------------------------------------------------
             records_processed += page_count
+            total_duration_ms = int(
+                (datetime.now(timezone.utc) - page_start).total_seconds() * 1000
+            )
+
+            agg_metrics["pages_processed"] = agg_metrics.get("pages_processed", 0) + 1
+            agg_metrics["records_fetched"] = agg_metrics.get("records_fetched", 0) + records_fetched
+            agg_metrics["records_written"] = agg_metrics.get("records_written", 0) + page_count
+            agg_metrics["errors"] = agg_metrics.get("errors", 0)
+            agg_metrics["total_duration_ms"] = (
+                agg_metrics.get("total_duration_ms", 0) + total_duration_ms
+            )
+            agg_metrics["pg_duration_ms"] = (
+                agg_metrics.get("pg_duration_ms", 0) + pg_duration_ms
+            )
+            agg_metrics["neo4j_duration_ms"] = (
+                agg_metrics.get("neo4j_duration_ms", 0) + neo4j_duration_ms
+            )
+
+            # -----------------------------------------------------------------
+            # Persist progress
+            # -----------------------------------------------------------------
             now = datetime.now(timezone.utc)
             await upsert_crawl_state(
                 pg_session,
@@ -322,20 +394,24 @@ async def run_crawl(
                 last_crawled_at=now,
                 records_processed=records_processed,
                 last_error=None,
+                metrics=agg_metrics,
             )
             await pg_session.commit()
+            # Update the local cursor so the exception handler can reference
+            # the last successfully persisted value.
+            cursor = page_cursor
 
-            duration_ms = int(
-                (datetime.now(timezone.utc) - page_start).total_seconds() * 1000
-            )
             logger.info(
                 "Crawl page complete",
                 extra={
                     "job_id": job_id,
                     "cursor": page_cursor,
+                    "records_fetched": records_fetched,
                     "page_count": page_count,
                     "records_processed": records_processed,
-                    "duration_ms": duration_ms,
+                    "pg_duration_ms": pg_duration_ms,
+                    "neo4j_duration_ms": neo4j_duration_ms,
+                    "total_duration_ms": total_duration_ms,
                 },
             )
 
@@ -359,21 +435,32 @@ async def run_crawl(
         await pg_session.commit()
         logger.info(
             "Crawl completed",
-            extra={"job_id": job_id, "total_records": records_processed},
+            extra={
+                "job_id": job_id,
+                "total_records": records_processed,
+                "pages_processed": agg_metrics.get("pages_processed", 0),
+                "total_duration_ms": agg_metrics.get("total_duration_ms", 0),
+            },
         )
 
     except Exception as exc:
+        agg_metrics["errors"] = agg_metrics.get("errors", 0) + 1
         logger.exception(
             "Crawl failed",
             extra={"job_id": job_id, "error": str(exc)},
         )
         try:
+            # Preserve the last successfully persisted cursor by using the
+            # most recent cursor value tracked through the page loop.
+            # `cursor` here is the last value assigned in the loop body, which
+            # equals the cursor from the most recent successful page write.
             await upsert_crawl_state(
                 pg_session,
                 job_id,
                 cursor=cursor,
                 records_processed=records_processed,
                 last_error=str(exc),
+                metrics=agg_metrics,
             )
             await update_crawl_job_status(pg_session, job_id, "failed")
             await pg_session.commit()
