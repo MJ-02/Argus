@@ -72,7 +72,7 @@ class OpenAlexClient:
         self._client = httpx.AsyncClient(
             base_url=self._base_url,
             headers={
-                "User-Agent": f"ArticleGraph/0.1 (mailto:{settings.openalex_email})",
+                "User-Agent": f"argus/0.1 (mailto:{settings.openalex_email})",
             },
             timeout=30.0,
         )

@@ -1,14 +1,14 @@
-"""Phase 8 end-to-end validation tests.
+"""end-to-end validation tests.
 
 Covers:
-  8.2 — Citation graph traversal correctness at depths 1, 2, and 3
-  8.3 — Resumable crawl: crash then resume with no duplicate records
-  8.4 — API latency benchmark: p95 under 200 ms for search and citation queries
+    Citation graph traversal correctness at depths 1, 2, and 3
+    Resumable crawl: crash then resume with no duplicate records
+    API latency benchmark: p95 under 200 ms for search and citation queries
 
 All tests run against real Postgres/Neo4j containers via testcontainers.
 
 Run with Docker available:
-    uv run pytest tests/test_phase8.py -v -s
+    uv run pytest tests/test_e2e.py -v -s
 """
 from __future__ import annotations
 

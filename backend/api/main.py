@@ -68,7 +68,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await engine.dispose()
 
 
-app = FastAPI(title="ArticleGraph API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="argus API", version="0.1.0", lifespan=lifespan)
 
 # ---------------------------------------------------------------------------
 # CORS — allow the Next.js dev server and any local origin

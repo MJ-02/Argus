@@ -1,4 +1,4 @@
-"""Pydantic request/response models for the ArticleGraph API."""
+"""Pydantic request/response models for the argus API."""
 from __future__ import annotations
 
 from datetime import datetime

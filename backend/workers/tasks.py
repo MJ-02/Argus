@@ -1,4 +1,4 @@
-"""Celery tasks for the ArticleGraph crawler worker."""
+"""Celery tasks for the argus crawler worker."""
 from __future__ import annotations
 
 import asyncio

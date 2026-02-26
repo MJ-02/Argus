@@ -1,4 +1,4 @@
-"""Phase 7.4 — Retry and crash recovery validation tests.
+""" Retry and crash recovery validation tests.
 
 Tests verify:
 1. Resume after mid-crawl crash picks up from the persisted cursor (no data loss,

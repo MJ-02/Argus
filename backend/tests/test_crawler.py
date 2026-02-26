@@ -1,4 +1,4 @@
-"""Integration tests for the crawler engine (Phase 5.5).
+"""Integration tests for the crawler engine.
 
 Spins up real Postgres and Neo4j via testcontainers, runs the crawl engine
 with a mocked iter_works generator, and asserts that both databases contain

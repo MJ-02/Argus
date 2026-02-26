@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""End-to-end validation script for Phase 8.1 (10k papers) and 8.5 (100k papers).
+"""End-to-end validation script
 
-Connects to a running ArticleGraph Docker Compose stack and:
+Connects to a running argus Docker Compose stack and:
   1. Starts a crawl job with configurable seed parameters
   2. Polls the crawl status until the job completes or reaches the target count
   3. Queries Postgres and Neo4j directly to compare paper counts
   4. Reports throughput, duration, and final statistics
 
 Usage:
-    # Phase 8.1 — crawl to 10k papers
+    # crawl to 10k papers
     uv run python scripts/validate_e2e.py --target 10000
 
-    # Phase 8.5 — crawl to 100k papers (wide date range for volume)
+    # crawl to 100k papers (wide date range for volume)
     uv run python scripts/validate_e2e.py --target 100000 --date-from 2020-01-01
 
     # Custom API URL
@@ -130,7 +130,7 @@ def _poll_until_done(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="ArticleGraph Phase 8 end-to-end validator",
+        description=" end-to-end validator",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
@@ -139,7 +139,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--api-url", default="http://localhost:8000",
-        help="Base URL of the running ArticleGraph API",
+        help="Base URL of the running argus API",
     )
     parser.add_argument(
         "--date-from", default="2023-01-01",
@@ -152,12 +152,12 @@ def main() -> None:
     )
     parser.add_argument(
         "--pg-url",
-        default="postgresql://articlegraph:articlegraph@localhost:5432/articlegraph",
+        default="postgresql://argus:argus@localhost:5432/argus",
         help="asyncpg-compatible Postgres URL for count verification",
     )
     parser.add_argument("--neo4j-uri", default="bolt://localhost:7687")
     parser.add_argument("--neo4j-user", default="neo4j")
-    parser.add_argument("--neo4j-password", default="articlegraph")
+    parser.add_argument("--neo4j-password", default="argus")
     parser.add_argument(
         "--poll-interval", type=int, default=15,
         help="Seconds between crawl status polls",
@@ -165,7 +165,7 @@ def main() -> None:
     args = parser.parse_args()
 
     seed = _build_seed(args)
-    print(f"\nArticleGraph Phase 8 — End-to-End Validator")
+    print(f"  End-to-End Validator")
     print(f"  API           : {args.api_url}")
     print(f"  Target papers : {args.target:,}")
     print(f"  Seed config   : {seed}")

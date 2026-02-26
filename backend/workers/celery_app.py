@@ -5,7 +5,7 @@ from shared.config import settings
 from shared.logging import configure_logging
 
 app = Celery(
-    "articlegraph",
+    "argus",
     broker=settings.redis_url,
     backend=settings.redis_url,
     include=["workers.tasks"],
