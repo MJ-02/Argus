@@ -15,8 +15,8 @@ class PaperOut(BaseModel):
     doi: str | None
     citation_count: int
     source: str | None
-    created_at: datetime
-    updated_at: datetime
+    created_at: datetime | None
+    updated_at: datetime | None
 
 
 class PaperPage(BaseModel):
