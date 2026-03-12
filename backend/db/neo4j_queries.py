@@ -65,6 +65,34 @@ async def get_citation_graph(
     return {"nodes": nodes, "edges": edges}
 
 
+async def get_paper_node(driver: AsyncDriver, paper_id: str) -> dict | None:
+    """Return basic paper properties from a Neo4j node, or None if not found."""
+    query = """
+    MATCH (p:Paper {id: $paper_id})
+    RETURN p.id               AS id,
+           p.title            AS title,
+           p.publication_year AS publication_year,
+           p.citation_count   AS citation_count,
+           p.doi              AS doi,
+           p.abstract         AS abstract,
+           p.source           AS source
+    """
+    async with driver.session() as session:
+        result = await session.run(query, paper_id=paper_id)
+        record = await result.single()
+        if record is None:
+            return None
+        return {
+            "id": record["id"],
+            "title": record["title"],
+            "publication_year": record["publication_year"],
+            "citation_count": record["citation_count"],
+            "doi": record["doi"],
+            "abstract": record["abstract"],
+            "source": record["source"],
+        }
+
+
 async def get_papers_by_author(
     driver: AsyncDriver,
     author_id: str,

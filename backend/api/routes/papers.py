@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.deps import get_db, get_neo4j
 from api.schemas import CitationEdge, CitationGraph, CitationNode, PaperOut, PaperPage
 from db.models import PaperMetadata
-from db.neo4j_queries import get_citation_graph
+from db.neo4j_queries import get_citation_graph, get_paper_node
 
 router = APIRouter(prefix="/papers", tags=["papers"])
 
@@ -75,11 +75,28 @@ async def search_papers(
 
 
 @router.get("/{paper_id}", response_model=PaperOut)
-async def get_paper(paper_id: str, db: AsyncSession = Depends(get_db)) -> PaperOut:
+async def get_paper(
+    paper_id: str,
+    db: AsyncSession = Depends(get_db),
+    neo4j: AsyncDriver = Depends(get_neo4j),
+) -> PaperOut:
     row = await db.get(PaperMetadata, paper_id)
-    if row is None:
+    if row is not None:
+        return _paper_row_to_out(row)
+    node = await get_paper_node(neo4j, paper_id)
+    if node is None:
         raise HTTPException(status_code=404, detail="Paper not found")
-    return _paper_row_to_out(row)
+    return PaperOut(
+        id=node["id"],
+        title=node["title"],
+        abstract=node["abstract"],
+        publication_year=node["publication_year"],
+        doi=node["doi"],
+        citation_count=node["citation_count"] or 0,
+        source=node["source"],
+        created_at=None,
+        updated_at=None,
+    )
 
 
 @router.get("/{paper_id}/citations", response_model=CitationGraph)
