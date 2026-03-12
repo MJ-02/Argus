@@ -55,6 +55,6 @@ if __name__ == "__main__":
         apply(
             uri=os.environ.get("NEO4J_URI", "bolt://neo4j:7687"),
             user=os.environ.get("NEO4J_USER", "neo4j"),
-            password=os.environ.get("NEO4J_PASSWORD", "argus"),
+            password=os.environ.get("NEO4J_PASSWORD", "argus-1234"),
         )
     )

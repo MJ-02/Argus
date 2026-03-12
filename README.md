@@ -60,8 +60,8 @@ Celery Worker (async crawler)
 Copy the defaults or create a `.env` file at the project root:
 
 ```
-POSTGRES_PASSWORD=articlegraph
-NEO4J_PASSWORD=articlegraph
+POSTGRES_PASSWORD=argus
+NEO4J_PASSWORD=argus-1234
 OPENALEX_EMAIL=your@email.com
 ```
 
@@ -146,7 +146,7 @@ GET  /health
 ## Project Structure
 
 ```
-ArticleGraph/
+argus/
 ├── backend/
 │   ├── api/            FastAPI app, routes, schemas, Prometheus metrics
 │   ├── crawler/        OpenAlex HTTP client, extractors, crawl engine
